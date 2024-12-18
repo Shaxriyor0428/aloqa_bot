@@ -4,12 +4,14 @@ import { Users } from "../entities/users.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Context, Telegraf } from "telegraf";
 import { InjectBot } from "nestjs-telegraf";
-import { ADMIN_ID, BOT_NAME } from "../../app.constants";
+import { BOT_NAME } from "../../app.constants";
+import { Role } from "../entities/role.entity";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users) private readonly usersRepo: Repository<Users>,
+    @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
     @InjectBot(BOT_NAME) private bot: Telegraf<Context>
   ) {}
 
@@ -57,13 +59,43 @@ export class UsersService {
         await this.usersRepo.save(user);
 
         await ctx.editMessageText("Bo'lim muvaffaqiyatli tanlandi ✅");
-        await ctx.reply("Sizning malumotlaringiz adminga yuborildi, admin tasdiqlashi kutilmoqda... ✅", {
-          reply_markup: {
-            remove_keyboard: true,
-          },
-        });
+        await ctx.reply(
+          "Sizning malumotlaringiz adminga yuborildi, admin tasdiqlashi kutilmoqda... ✅",
+          {
+            reply_markup: {
+              remove_keyboard: true,
+            },
+          }
+        );
+        const role = await this.roleRepo.findOneBy({ id: user.role_id });
+        await this.bot.telegram.sendMessage(
+          process.env.ADMIN,
+          `
+<b>📝 Foydalanuvchi Ma'lumotlari</b>
 
-        await this.bot.telegram.sendMessage(ADMIN_ID,"sfd")
+👤 <b>Ism:</b> ${user.f_name}
+👥 <b>Familiya:</b> ${user.l_name}
+📞 <b>Telefon raqami:</b> ${user.phone_number}
+🛠 <b>Rol:</b> ${role.name}
+  `,
+          {
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "✅ Tasdiqlash",
+                    callback_data: `approveUser_1_${user.id}`,
+                  },
+                  {
+                    text: "❌ Rad etish",
+                    callback_data: `approveUser_2_${user.id}`,
+                  },
+                ],
+              ],
+            },
+          }
+        );
       }
     } catch (error) {
       console.error("ERROR ON handleDepartment: ", error);
