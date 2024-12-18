@@ -6,12 +6,15 @@ import { Context, Telegraf } from "telegraf";
 import { InjectBot } from "nestjs-telegraf";
 import { BOT_NAME } from "../../app.constants";
 import { Role } from "../entities/role.entity";
+import { Department } from "../entities/department-entity";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users) private readonly usersRepo: Repository<Users>,
     @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
+    @InjectRepository(Department)
+    private readonly departmentRepo: Repository<Department>,
     @InjectBot(BOT_NAME) private bot: Telegraf<Context>
   ) {}
 
@@ -68,15 +71,30 @@ export class UsersService {
           }
         );
         const role = await this.roleRepo.findOneBy({ id: user.role_id });
+        const department = await this.departmentRepo.findOneBy({
+          id: user.department_id,
+        });
+
         await this.bot.telegram.sendMessage(
           process.env.ADMIN,
           `
-<b>📝 Foydalanuvchi Ma'lumotlari</b>
-
-👤 <b>Ism:</b> ${user.f_name}
-👥 <b>Familiya:</b> ${user.l_name}
-📞 <b>Telefon raqami:</b> ${user.phone_number}
-🛠 <b>Rol:</b> ${role.name}
+    <b>📝 Foydalanuvchi Ma'lumotlari</b>
+  
+    👤 <b>Ism:</b> ` +
+            (user.f_name || "Noma'lum") +
+            `
+    👥 <b>Familiya:</b> ` +
+            (user.l_name || "Noma'lum") +
+            `
+    📞 <b>Telefon raqami:</b> ` +
+            (user.phone_number || "Noma'lum") +
+            `
+    🛠 <b>Rol:</b> ` +
+            (role ? role.name : "Noma'lum") +
+            `
+    🏢 <b>Bo'lim:</b> ` +
+            (department ? department.name : "Noma'lum") +
+            `
   `,
           {
             parse_mode: "HTML",
@@ -96,6 +114,7 @@ export class UsersService {
             },
           }
         );
+
       }
     } catch (error) {
       console.error("ERROR ON handleDepartment: ", error);
