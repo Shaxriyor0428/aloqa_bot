@@ -4,7 +4,7 @@ import { Users } from "../entities/users.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Context, Telegraf } from "telegraf";
 import { InjectBot } from "nestjs-telegraf";
-import { BOT_NAME } from "../../app.constants";
+import { ADMIN_ID, BOT_NAME } from "../../app.constants";
 
 @Injectable()
 export class UsersService {
@@ -56,12 +56,14 @@ export class UsersService {
         user.last_state = "finish";
         await this.usersRepo.save(user);
 
-        
-        await ctx.reply("Sizning malumotlaringiz muvaffaqiyatli saqlandi ✅", {
+        await ctx.editMessageText("Bo'lim muvaffaqiyatli tanlandi ✅");
+        await ctx.reply("Sizning malumotlaringiz adminga yuborildi, admin tasdiqlashi kutilmoqda... ✅", {
           reply_markup: {
             remove_keyboard: true,
           },
         });
+
+        await this.bot.telegram.sendMessage(ADMIN_ID,"sfd")
       }
     } catch (error) {
       console.error("ERROR ON handleDepartment: ", error);
