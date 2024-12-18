@@ -4,7 +4,6 @@ import { Context, Markup } from "telegraf";
 import { Role } from "./entities/role.entity";
 import { Repository } from "typeorm";
 import { Users } from "./entities/users.entity";
-import { UserRoles } from "./entities/userRoles.entity";
 import { Department } from "./entities/department-entity";
 
 @Injectable()
@@ -12,7 +11,6 @@ export class BotService {
   constructor(
     @InjectRepository(Role) private roleRepo: Repository<Role>,
     @InjectRepository(Users) private usersRepo: Repository<Users>,
-    @InjectRepository(UserRoles) private userRolesRepo: Repository<UserRoles>,
     @InjectRepository(Department) private departmentRepo: Repository<Department>
   ) {}
 
@@ -26,7 +24,6 @@ export class BotService {
       }
       if (user && user.last_state !== "finish") {
         await this.usersRepo.delete({ id: user_id });
-        await this.userRolesRepo.delete({ user_id });
       }
       const roles = await this.roleRepo.find();
       const chunkSize = 2;

@@ -18,5 +18,8 @@ export class Users {
   department_id: number;
 
   @Column({ nullable: true })
+  role_id: number;
+
+  @Column({ nullable: true })
   last_state: string;
 }

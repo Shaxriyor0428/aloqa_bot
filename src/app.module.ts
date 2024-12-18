@@ -3,10 +3,9 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { TelegrafModule } from "nestjs-telegraf";
 import { BotModule } from "./bot/bot.module";
-import { BOT_NAME } from "./bot/app.constants";
+import { BOT_NAME } from "./app.constants";
 import { Department } from "./bot/entities/department-entity";
 import { Role } from "./bot/entities/role.entity";
-import { UserRoles } from "./bot/entities/userRoles.entity";
 import { Users } from "./bot/entities/users.entity";
 
 @Module({
@@ -19,7 +18,7 @@ import { Users } from "./bot/entities/users.entity";
       username: process.env.PG_USER,
       password: process.env.PG_PASS,
       database: process.env.PG_DB,
-      entities: [Department, Role, UserRoles, Users],
+      entities: [Department, Role, Users],
       autoLoadEntities: true,
       synchronize: true,
     }),
@@ -33,7 +32,6 @@ import { Users } from "./bot/entities/users.entity";
     }),
     BotModule,
   ],
-
   controllers: [],
   providers: [],
 })

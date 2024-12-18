@@ -3,16 +3,13 @@ import { Repository } from "typeorm";
 import { Users } from "../entities/users.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Context, Telegraf } from "telegraf";
-import { UserRoles } from "../entities/userRoles.entity";
 import { InjectBot } from "nestjs-telegraf";
-import { BOT_NAME } from "../app.constants";
+import { BOT_NAME } from "../../app.constants";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users) private readonly usersRepo: Repository<Users>,
-    @InjectRepository(UserRoles)
-    private readonly userRolesRepo: Repository<UserRoles>,
     @InjectBot(BOT_NAME) private bot: Telegraf<Context>
   ) {}
 
@@ -27,16 +24,11 @@ export class UsersService {
       }
       if (user && user.last_state !== "finish") {
         await this.usersRepo.delete({ id: user_id });
-        await this.userRolesRepo.delete({ user_id });
       }
-
-      await this.userRolesRepo.save({
-        user_id: user_id,
-        role_id: role_id,
-      });
       await this.usersRepo.save({
         id: user_id,
         last_state: "f_name",
+        role_id,
       });
       return await ctx.editMessageText(
         "Rolengiz muvaffaqiyatli tanlandi ✅ \nIsmingizni kiriting: "
@@ -63,6 +55,8 @@ export class UsersService {
         user.department_id = department_id;
         user.last_state = "finish";
         await this.usersRepo.save(user);
+
+        
         await ctx.reply("Sizning malumotlaringiz muvaffaqiyatli saqlandi ✅", {
           reply_markup: {
             remove_keyboard: true,
